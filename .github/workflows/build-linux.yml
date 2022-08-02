@@ -105,16 +105,18 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10
 
       - name: 'Configure'
-        run: >
-          bash configure
-          --with-conf-name=${{ inputs.platform }}
-          ${{ matrix.flags }}
-          --with-version-opt=${GITHUB_ACTOR}-${GITHUB_SHA}
-          --with-boot-jdk=${{ steps.bootjdk.outputs.path }}
-          --with-jtreg=${{ steps.jtreg.outputs.path }}
-          --with-gtest=${{ steps.gtest.outputs.path }}
+        run: |
+          git apply -p0 < jb/project/tools/patches/add_jcef_module.patch
+          patch -p1 < idea.patch
+          bash configure  \
+          --with-conf-name=${{ inputs.platform }} \
+          ${{ matrix.flags }} \
+          --with-version-opt=${GITHUB_ACTOR}-${GITHUB_SHA} \
+          --with-boot-jdk=${{ steps.bootjdk.outputs.path }} \
+          --with-jtreg=${{ steps.jtreg.outputs.path }} \
+          --with-gtest=${{ steps.gtest.outputs.path }} \
           --enable-jtreg-failure-handler
-          --with-zlib=system
+          --with-zlib=system \
           ${{ inputs.extra-conf-options }}
 
       - name: 'Build'
